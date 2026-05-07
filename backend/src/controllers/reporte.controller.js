@@ -20,20 +20,22 @@ const handle = (fn) => async (req, res) => {
 const crear = handle(async (req, res) => {
   const body = req.body || {};
 
+  const categoriaId = Number(body.categoria_id);
+
+  if (!Number.isInteger(categoriaId)) {
+    return res.status(400).json({
+      error: 'categoria_id inválido'
+    });
+  }
+
   const data = {
     titulo: body.titulo?.trim(),
     descripcion: body.descripcion?.trim(),
     direccion_referencia: body.direccion_referencia?.trim() || null,
-    latitud: body.latitud ? Number(body.latitud) : null,
-    longitud: body.longitud ? Number(body.longitud) : null,
-    categoria_id: body.categoria_id,
+    latitud: Number(body.latitud),
+    longitud: Number(body.longitud),
+    categoria_id: categoriaId,
   };
-
-  console.log("DATA NORMALIZADA:", data);
-
-  if (!req.user?.id) {
-    return res.status(401).json({ error: 'Usuario no autenticado' });
-  }
 
   const reporte = await reporteService.crear({
     ...data,

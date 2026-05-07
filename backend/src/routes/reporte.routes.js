@@ -55,7 +55,7 @@ router.post('/:id/reenviar',       auth, authorize('ciudadano'), ctrl.reenviarPa
 router.post('/:id/comentarios',    auth, authorize('ciudadano', 'administrador'), validarComentario, comentCtrl.agregar);
 router.post('/:id/reportar',       auth, authorize('ciudadano', 'administrador'), ctrl.reportarContenido);
 
-// Solo admin
+
 router.put('/:id/estado',          auth, authorize('administrador'), validarEstado, ctrl.cambiarEstado);
 router.put('/:id/asignar',         auth, authorize('administrador'), ctrl.asignar);
 router.delete('/:id/imagenes/:imageId', auth, authorize('administrador'), ctrl.eliminarImagen);
