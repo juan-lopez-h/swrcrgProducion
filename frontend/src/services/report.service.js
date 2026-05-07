@@ -2,16 +2,26 @@ import { get, put, post, del } from './api';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-// Crea un reporte con FormData (multipart para imagen opcional)
 export const createReportForm = (formData) => {
   const token = localStorage.getItem('token');
+
+  console.log("FORMDATA CONTENT:");
+  for (let pair of formData.entries()) {
+    console.log(pair[0], pair[1]);
+  }
+
   return fetch(`${BASE_URL}/reportes`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   }).then(async (res) => {
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Error al crear el reporte');
+
+    if (!res.ok) {
+      console.error("BACKEND ERROR:", data);
+      throw new Error(data.error || JSON.stringify(data.errores) || 'Error al crear el reporte');
+    }
+
     return data;
   });
 };

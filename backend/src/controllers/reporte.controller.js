@@ -18,37 +18,26 @@ const handle = (fn) => async (req, res) => {
 };
 
 const crear = handle(async (req, res) => {
-  console.log('──── DEBUG crear reporte ────');
-  console.log('BODY:', req.body);
-  console.log('FILE:', req.file || 'NO FILE');
-  console.log('USER:', req.user);
-  console.log('────────────────────────────');
+  const body = req.body || {};
+
+  const data = {
+    titulo: body.titulo?.trim(),
+    descripcion: body.descripcion?.trim(),
+    direccion_referencia: body.direccion_referencia?.trim() || null,
+    latitud: body.latitud ? Number(body.latitud) : null,
+    longitud: body.longitud ? Number(body.longitud) : null,
+    categoria_id: body.categoria_id,
+  };
+
+  console.log("DATA NORMALIZADA:", data);
 
   if (!req.user?.id) {
     return res.status(401).json({ error: 'Usuario no autenticado' });
   }
 
-  const {
-    titulo,
-    descripcion,
-    direccion_referencia,
-    latitud,
-    longitud,
-    categoria_id
-  } = req.body || {}; // 🔥 FIX CRÍTICO
-
-  if (!titulo || !descripcion) {
-    return res.status(400).json({ error: 'Datos incompletos' });
-  }
-
   const reporte = await reporteService.crear({
-    titulo,
-    descripcion,
-    direccion_referencia,
-    latitud: latitud ? Number(latitud) : null,
-    longitud: longitud ? Number(longitud) : null,
+    ...data,
     usuario_id: req.user.id,
-    categoria_id,
   });
 
   if (req.file) {
@@ -162,8 +151,20 @@ const votar = handle(async (req, res) => {
 
 const cercanos = handle(async (req, res) => {
   const { lat, lng, radio = 0.5 } = req.query;
-  if (!lat || !lng) return res.status(400).json({ error: 'lat y lng son requeridos' });
-  const reportes = await reporteService.buscarCercanos(parseFloat(lat), parseFloat(lng), parseFloat(radio));
+
+  if (!lat || !lng) {
+    return res.status(400).json({ error: 'lat y lng son requeridos' });
+  }
+
+  const latNum = Number(lat);
+  const lngNum = Number(lng);
+
+  if (Number.isNaN(latNum) || Number.isNaN(lngNum)) {
+    return res.status(400).json({ error: 'lat/lng inválidos' });
+  }
+
+  const reportes = await reporteService.buscarCercanos(latNum, lngNum, Number(radio));
+
   res.json({ reportes });
 });
 
