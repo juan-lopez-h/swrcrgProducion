@@ -4,36 +4,52 @@ const { validationResult } = require('express-validator');
 const reporteService       = require('../services/reporte.service');
 
 const handle = (fn) => async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errores: errors.array() });
-  try { await fn(req, res); }
-  catch (err) { res.status(err.status || 500).json({ error: err.message }); }
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errores: errors.array() });
+    }
+
+    await fn(req, res);
+  } catch (err) {
+    console.error('ERROR controller:', err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
 };
 
 const crear = async (req, res) => {
-  // ── DEBUG: descomentar cuando se resuelva el 400 ──
+  // 🔍 DEBUG (solo temporal)
   console.log('──── DEBUG crear reporte ────');
   console.log('BODY:', req.body);
-  console.log('FILE:', req.file ? { name: req.file.originalname, size: req.file.size, mime: req.file.mimetype } : 'NO FILE');
-  console.log('VALIDATION ERRORS:', validationResult(req).array());
+  console.log('FILE:', req.file || 'NO FILE');
+  console.log('USER:', req.user);
   console.log('────────────────────────────');
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errores: errors.array() });
+  const { titulo, descripcion, direccion_referencia, latitud, longitud, categoria_id } = req.body;
 
-  try {
-    const { titulo, descripcion, direccion_referencia, latitud, longitud, categoria_id } = req.body;
-    const reporte = await reporteService.crear({
-      titulo, descripcion, direccion_referencia,
-      latitud: Number(latitud), longitud: Number(longitud),
-      usuario_id: req.user.id, categoria_id,
-    });
-    if (req.file) await reporteService.agregarImagen({ reporte_id: reporte.id, file: req.file });
-    res.status(201).json({ reporte });
-  } catch (err) {
-    console.error('ERROR crear reporte:', err);
-    res.status(err.status || 500).json({ error: err.message });
+
+  if (!req.user?.id) {
+    return res.status(401).json({ error: 'Usuario no autenticado' });
   }
+
+  const reporte = await reporteService.crear({
+    titulo,
+    descripcion,
+    direccion_referencia,
+    latitud: latitud ? Number(latitud) : null,
+    longitud: longitud ? Number(longitud) : null,
+    usuario_id: req.user.id,
+    categoria_id,
+  });
+
+  if (req.file) {
+    await reporteService.agregarImagen({
+      reporte_id: reporte.id,
+      file: req.file,
+    });
+  }
+
+  return res.status(201).json({ reporte });
 };
 
 const listar = handle(async (req, res) => {
