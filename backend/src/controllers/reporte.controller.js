@@ -10,16 +10,31 @@ const handle = (fn) => async (req, res) => {
   catch (err) { res.status(err.status || 500).json({ error: err.message }); }
 };
 
-const crear = handle(async (req, res) => {
-  const { titulo, descripcion, direccion_referencia, latitud, longitud, categoria_id } = req.body;
-  const reporte = await reporteService.crear({
-    titulo, descripcion, direccion_referencia,
-    latitud: Number(latitud), longitud: Number(longitud),
-    usuario_id: req.user.id, categoria_id,
-  });
-  if (req.file) await reporteService.agregarImagen({ reporte_id: reporte.id, file: req.file });
-  res.status(201).json({ reporte });
-});
+const crear = async (req, res) => {
+  // ── DEBUG: descomentar cuando se resuelva el 400 ──
+  console.log('──── DEBUG crear reporte ────');
+  console.log('BODY:', req.body);
+  console.log('FILE:', req.file ? { name: req.file.originalname, size: req.file.size, mime: req.file.mimetype } : 'NO FILE');
+  console.log('VALIDATION ERRORS:', validationResult(req).array());
+  console.log('────────────────────────────');
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errores: errors.array() });
+
+  try {
+    const { titulo, descripcion, direccion_referencia, latitud, longitud, categoria_id } = req.body;
+    const reporte = await reporteService.crear({
+      titulo, descripcion, direccion_referencia,
+      latitud: Number(latitud), longitud: Number(longitud),
+      usuario_id: req.user.id, categoria_id,
+    });
+    if (req.file) await reporteService.agregarImagen({ reporte_id: reporte.id, file: req.file });
+    res.status(201).json({ reporte });
+  } catch (err) {
+    console.error('ERROR crear reporte:', err);
+    res.status(err.status || 500).json({ error: err.message });
+  }
+};
 
 const listar = handle(async (req, res) => {
   const incluirRechazados = req.user?.rol === 'administrador';
