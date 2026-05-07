@@ -16,7 +16,9 @@ const validarReporte = [
   body('descripcion').notEmpty().withMessage('descripcion es obligatoria'),
   body('latitud').isFloat({ min: -90, max: 90 }).withMessage('latitud inválida'),
   body('longitud').isFloat({ min: -180, max: 180 }).withMessage('longitud inválida'),
-  body('categoria_id').isUUID().withMessage('categoria_id debe ser UUID válido'),
+  body('categoria_id')
+  .isInt()
+  .withMessage('categoria_id debe ser un número entero válido'),
 ];
 
 const validarEstado = [
