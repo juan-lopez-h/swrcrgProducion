@@ -248,18 +248,13 @@ const reenviarParaRevision = async (id, usuario_id) => {
   return reporte.reload({ include: [{ model: EstadoReporte, as: 'estado' }] });
 };
 
-const { uploadToCloudinary } = require('./cloudinary.service');
 
 const agregarImagen = async ({ reporte_id, file }) => {
-  if (!file || !file.buffer) {
+  if (!file?.buffer) {
     throw Object.assign(new Error('Archivo inválido'), { status: 400 });
   }
 
   const result = await uploadToCloudinary(file.buffer);
-
-  if (!result || !result.secure_url) {
-    throw Object.assign(new Error('Error al subir imagen a Cloudinary'), { status: 500 });
-  }
 
   return ImagenReporte.create({
     reporte_id,
