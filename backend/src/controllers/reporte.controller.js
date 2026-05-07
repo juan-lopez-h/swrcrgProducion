@@ -17,19 +17,28 @@ const handle = (fn) => async (req, res) => {
   }
 };
 
-const crear = async (req, res) => {
-  // 🔍 DEBUG (solo temporal)
+const crear = handle(async (req, res) => {
   console.log('──── DEBUG crear reporte ────');
   console.log('BODY:', req.body);
   console.log('FILE:', req.file || 'NO FILE');
   console.log('USER:', req.user);
   console.log('────────────────────────────');
 
-  const { titulo, descripcion, direccion_referencia, latitud, longitud, categoria_id } = req.body;
-
-
   if (!req.user?.id) {
     return res.status(401).json({ error: 'Usuario no autenticado' });
+  }
+
+  const {
+    titulo,
+    descripcion,
+    direccion_referencia,
+    latitud,
+    longitud,
+    categoria_id
+  } = req.body || {}; // 🔥 FIX CRÍTICO
+
+  if (!titulo || !descripcion) {
+    return res.status(400).json({ error: 'Datos incompletos' });
   }
 
   const reporte = await reporteService.crear({
@@ -50,8 +59,7 @@ const crear = async (req, res) => {
   }
 
   return res.status(201).json({ reporte });
-};
-
+});
 const listar = handle(async (req, res) => {
   const incluirRechazados = req.user?.rol === 'administrador';
   const {
