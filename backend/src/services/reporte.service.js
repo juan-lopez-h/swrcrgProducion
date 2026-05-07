@@ -3,6 +3,7 @@
 const { Reporte, Usuario, EstadoReporte, CategoriaReporte, ImagenReporte, HistorialEstado, ComentarioReporte, Sequelize } = require('../models');
 const { Op } = Sequelize;
 const notificacionService = require('./notificacion.service');
+const { uploadToCloudinary } = require('./cloudinary.service');
 
 const INCLUDE_BASE = (extra = []) => [
   { model: Usuario,          as: 'usuario',   attributes: ['id', 'nombre', 'apellido'] },
@@ -18,6 +19,28 @@ const crear = async ({ titulo, descripcion, direccion_referencia, latitud, longi
 
   return Reporte.create({ titulo, descripcion, direccion_referencia, latitud, longitud, usuario_id, estado_id: estado.id, categoria_id });
 };
+
+
+'use strict';
+
+const cloudinary = require('../config/cloudinary');
+const streamifier = require('streamifier');
+
+const uploadToCloudinary = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'reportes' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
+
+module.exports = { uploadToCloudinary };
 
 const listar = async ({
   incluirRechazados = false,
@@ -225,12 +248,24 @@ const reenviarParaRevision = async (id, usuario_id) => {
   return reporte.reload({ include: [{ model: EstadoReporte, as: 'estado' }] });
 };
 
+const { uploadToCloudinary } = require('./cloudinary.service');
+
 const agregarImagen = async ({ reporte_id, file }) => {
+  if (!file || !file.buffer) {
+    throw Object.assign(new Error('Archivo inválido'), { status: 400 });
+  }
+
+  const result = await uploadToCloudinary(file.buffer);
+
+  if (!result || !result.secure_url) {
+    throw Object.assign(new Error('Error al subir imagen a Cloudinary'), { status: 500 });
+  }
+
   return ImagenReporte.create({
     reporte_id,
-    url_imagen:     `/uploads/${file.filename}`,
+    url_imagen: result.secure_url,
     nombre_archivo: file.originalname,
-    tipo_archivo:   file.mimetype,
+    tipo_archivo: file.mimetype,
     tamano_archivo: file.size,
   });
 };
