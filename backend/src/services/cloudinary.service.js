@@ -1,6 +1,6 @@
 'use strict';
 
-const cloudinary = require('swrcrg/backend/src/config/cloudinary.js');
+const cloudinary  = require('../config/cloudinary');
 const streamifier = require('streamifier');
 
 const uploadToCloudinary = (buffer) => {

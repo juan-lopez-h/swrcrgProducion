@@ -1,6 +1,5 @@
 'use strict';
-const cloudinary   = require('../config/cloudinary');
-const streamifier  = require('streamifier');
+const { uploadToCloudinary } = require('./cloudinary.service');
 const { Reporte, Usuario, EstadoReporte, CategoriaReporte, ImagenReporte, HistorialEstado, ComentarioReporte, Sequelize } = require('../models');
 const { Op } = Sequelize;
 const notificacionService = require('./notificacion.service');
@@ -19,17 +18,6 @@ const crear = async ({ titulo, descripcion, direccion_referencia, latitud, longi
   return Reporte.create({ titulo, descripcion, direccion_referencia, latitud, longitud, usuario_id, estado_id: estado.id, categoria_id });
 };
 
-// Sube un buffer a Cloudinary usando stream
-const uploadToCloudinary = (buffer) => new Promise((resolve, reject) => {
-  const stream = cloudinary.uploader.upload_stream(
-    { folder: 'swrcrg/reportes', resource_type: 'image' },
-    (error, result) => {
-      if (error) return reject(error);
-      resolve(result);
-    },
-  );
-  streamifier.createReadStream(buffer).pipe(stream);
-});
 
 const listar = async ({
   incluirRechazados = false,
