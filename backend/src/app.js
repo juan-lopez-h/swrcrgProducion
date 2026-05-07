@@ -15,6 +15,7 @@ const categoriaRoutes    = require('./routes/categoria.routes');
 
 const app = express();
 
+app.set('trust proxy', 1);
 // Rate limiting global
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 min
