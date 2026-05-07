@@ -17,4 +17,6 @@ const uploadToCloudinary = (buffer) => {
   });
 };
 
-module.exports = { uploadToCloudinary };
+module.exports = {
+  uploadToCloudinary,
+};

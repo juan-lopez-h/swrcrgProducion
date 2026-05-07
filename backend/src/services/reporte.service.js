@@ -1,10 +1,8 @@
 'use strict';
-
+const { uploadToCloudinary } = require('./cloudinary.service');
 const { Reporte, Usuario, EstadoReporte, CategoriaReporte, ImagenReporte, HistorialEstado, ComentarioReporte, Sequelize } = require('../models');
 const { Op } = Sequelize;
 const notificacionService = require('./notificacion.service');
-const { uploadToCloudinary } = require('./cloudinary.service');
-
 const INCLUDE_BASE = (extra = []) => [
   { model: Usuario,          as: 'usuario',   attributes: ['id', 'nombre', 'apellido'] },
   { model: EstadoReporte,    as: 'estado',    attributes: ['id', 'nombre'] },
@@ -20,27 +18,6 @@ const crear = async ({ titulo, descripcion, direccion_referencia, latitud, longi
   return Reporte.create({ titulo, descripcion, direccion_referencia, latitud, longitud, usuario_id, estado_id: estado.id, categoria_id });
 };
 
-
-'use strict';
-
-const cloudinary = require('../config/cloudinary');
-const streamifier = require('streamifier');
-
-const uploadToCloudinary = (buffer) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder: 'reportes' },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-
-    streamifier.createReadStream(buffer).pipe(stream);
-  });
-};
-
-module.exports = { uploadToCloudinary };
 
 const listar = async ({
   incluirRechazados = false,
@@ -342,4 +319,21 @@ const asignar = async (reporte_id, funcionario_id) => {
   });
 };
 
-module.exports = { crear, listar, listarTodos, listarPorCategoria, obtenerPorId, obtenerPorUsuario, cambiarEstado, reenviarParaRevision, agregarImagen, eliminarImagen, editar, eliminar, votar, buscarCercanos, reportarContenido, asignar };
+module.exports = {
+  crear,
+  listar,
+  listarTodos,
+  listarPorCategoria,
+  obtenerPorId,
+  obtenerPorUsuario,
+  cambiarEstado,
+  reenviarParaRevision,
+  agregarImagen,
+  eliminarImagen,
+  editar,
+  eliminar,
+  votar,
+  buscarCercanos,
+  reportarContenido,
+  asignar
+};
