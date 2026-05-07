@@ -16,7 +16,8 @@ const registerUser = async (req, res) => {
     const user = await register({ nombre, apellido, correo, contrasena, telefono, rol }, callerRol);
     return res.status(201).json({ user });
   } catch (err) {
-    return res.status(err.status || 500).json({ error: err.message });
+    console.error('REGISTER ERROR:', err);
+    return res.status(err.status || 500).json({ error: err.message, stack: err.stack });
   }
 };
 
