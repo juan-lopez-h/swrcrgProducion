@@ -4,13 +4,13 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-COPY backend/package.json ./
-COPY backend/pnpm-lock.yaml ./
+COPY backend/package.json backend/pnpm-lock.yaml ./
 
 RUN pnpm install
 
-COPY backend/. .
+COPY backend/src ./src
+COPY backend/server.js ./
 
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["pnpm", "start"]
