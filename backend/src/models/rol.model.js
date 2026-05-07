@@ -7,9 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     descripcion: { type: DataTypes.TEXT },
   }, {
     tableName:  'roles',
-    timestamps: true,
-    createdAt:  'fecha_creacion',
-    updatedAt:  'fecha_actualizacion',
+    timestamps: false,
   });
 
   return Rol;

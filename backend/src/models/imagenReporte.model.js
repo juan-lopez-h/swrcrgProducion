@@ -10,9 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     tamano_archivo:  { type: DataTypes.INTEGER },
   }, {
     tableName:  'report_images',
-    timestamps: true,
-    createdAt:  'fecha_subida',
-    updatedAt:  false,
+    timestamps: false,
   });
 
   return ImagenReporte;
