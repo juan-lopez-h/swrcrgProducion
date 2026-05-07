@@ -1,8 +1,8 @@
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
-RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 
 COPY backend/package.json backend/pnpm-lock.yaml ./
 
