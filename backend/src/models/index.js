@@ -6,12 +6,30 @@ const config = require('../config/sequelize');
 const env      = process.env.NODE_ENV || 'development';
 const dbConfig = config[env];
 
-const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.username,
-  dbConfig.password,
-  { host: dbConfig.host, port: dbConfig.port, dialect: dbConfig.dialect, logging: dbConfig.logging }
-);
+let sequelize;
+
+if (env === 'production' && process.env.DATABASE_URL) {
+  // En producción, usar DATABASE_URL con SSL
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    protocol: 'postgres',
+    logging: false,
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+  });
+} else {
+  // En desarrollo/test, usar configuración individual
+  sequelize = new Sequelize(
+    dbConfig.database,
+    dbConfig.username,
+    dbConfig.password,
+    { host: dbConfig.host, port: dbConfig.port, dialect: dbConfig.dialect, logging: dbConfig.logging }
+  );
+}
 
 // ── Importar modelos ──────────────────────────────────────────────────────────
 const Rol                  = require('./rol.model')(sequelize, DataTypes);
