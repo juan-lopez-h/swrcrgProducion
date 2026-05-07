@@ -1,5 +1,5 @@
 'use strict';
-const { uploadToCloudinary } = require('./cloudinary.service');
+const cloudinary = require('../config/cloudinary');
 const { Reporte, Usuario, EstadoReporte, CategoriaReporte, ImagenReporte, HistorialEstado, ComentarioReporte, Sequelize } = require('../models');
 const { Op } = Sequelize;
 const notificacionService = require('./notificacion.service');
